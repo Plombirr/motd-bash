@@ -1,0 +1,28 @@
+#!/bin/bash
+############################
+source /etc/update-motd.d/strings/setlang.sh
+############################
+CONTAINER=( mailcowdockerized_nginx-mailcow_1 nextcloud portainer teamspeak_zockerstube EcoServer )
+CONTAINER_FRIENDLY_NAMES=( mailcow Nextcloud Portainer Teamspeak EcoServer ) 
+############################
+
+printf "$stringTitleDocker"
+
+docker_status=`systemctl status docker | grep "(dead)"`
+#echo $docker_status
+
+if [ -n "$docker_status" ]; then
+	printf "$stringDockerInactive"
+else  
+	for i in "${!CONTAINER[@]}" 
+	do
+		container_status=`docker inspect --format='{{.State.Running}}' ${CONTAINER[$i]}`		
+		if [ "$container_status" = "true" ]; then
+	        	printf "$stringCointainerActive"
+				printf "${CONTAINER_FRIENDLY_NAMES[i]} (${CONTAINER[$i]})\n"
+		elif [ "$container_status" = "false" ]; then 
+				printf "$stringCointainerInactive"
+				printf "${CONTAINER_FRIENDLY_NAMES[i]} (${CONTAINER[$i]})\n"
+	    fi
+	done
+fi

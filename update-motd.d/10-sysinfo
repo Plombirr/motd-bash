@@ -1,0 +1,48 @@
+#!/bin/bash
+############################
+source /etc/update-motd.d/strings/setlang.sh
+############################
+calc_bar()
+{
+	pcent_avail=$1
+	pcent_occup=$(( 100 - $pcent_avail ))
+	bar_length=$2
+	used_length=$(( $bar_length * $pcent_occup / 100 ))	
+	printf "["
+	for ((i=1; i<=$used_length; i++)); do
+		printf "${green}="
+	done
+	for ((i=1; i<=$(( $bar_length - $used_length )); i++)); do
+		printf "${reset}."
+	done
+	printf "]"
+}
+############################
+[ -r /etc/lsb-release ] && . /etc/lsb-release
+if [ -z "$DISTRIB_DESCRIPTION" ] && [ -x /usr/bin/lsb_release ]; then
+	# Fall back to using the very slow lsb_release utility
+	DISTRIB_DESCRIPTION=$(lsb_release -s -d)
+fi
+############################
+ip4=`ip addr show dev eth0 scope global | grep -w "inet" | awk '{print $2 }' | sed s'/\/[[:digit:]]*//'`
+ip6=`ip addr show dev eth0 scope global | grep -w "inet6" | awk '{print $2 }' | sed s'/\/[[:digit:]]*//'`
+loadavg=`cat /proc/loadavg | awk '{ print $1", "$2", "$3 }'`
+#Sprache!!
+ram_total=`free -m | grep -E "Mem|Speicher" | awk '{ print $2 }'`
+ram_used=`free -m | grep -E "Mem|Speicher" | awk '{ print $3 }'`
+ram_free=$(( $ram_total - $ram_used ))
+ram_pcent=`echo "(100/$ram_total)*$ram_free" | bc -l | awk '{printf("%d\n",$1 + 0.5)}'`
+############################
+
+
+############################
+printf "$stringTitleSysinfo"
+printf "$stringDistro" "$DISTRIB_DESCRIPTION" "$(uname -o)" "$(uname -r)" "$(uname -m)"
+printf "$stringHostname" "$(hostname)"
+printf "$stringIP" "$ip4"
+printf "$stringIP6" "$ip6"
+printf "$stringLoad" "$loadavg"
+printf "$stringTitleRam"
+printf "$stringRamBarTitle" "$ram_used" "$ram_total" "$ram_pcent"
+calc_bar $ram_pcent 40
+printf "\n\n"

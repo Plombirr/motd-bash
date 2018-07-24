@@ -1,0 +1,24 @@
+#!/bin/bash
+############################
+source /etc/update-motd.d/strings/setlang.sh
+############################
+SERVICES=(sshd ufw nginx vsftpd php7.0-fpm mysql docker )
+SERVICES_FRIENDLY_NAMES=(SSH UFW NGINX VSFTP PHP-FPM MYSQL DOCKER)
+############################
+
+printf "$stringTitleServices"
+
+for i in "${!SERVICES[@]}" 
+do
+	status=`systemctl status ${SERVICES[$i]} | grep "(dead)"`
+	if [ -z "$status" ]; then
+                printf "$stringActive"
+        else  
+				printf "$stringInactive"
+        fi
+	printf "${SERVICES_FRIENDLY_NAMES[i]} (${SERVICES[$i]})\n"
+done
+
+printf "\n"
+
+

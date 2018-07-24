@@ -1,0 +1,15 @@
+#!/bin/bash
+############################
+source /etc/update-motd.d/strings/setlang.sh
+############################
+figlet $(hostname)
+printf "\n"
+printf "$stringWelcome"
+
+uptimeDays=`awk '{print int($1/86400)}' /proc/uptime`
+uptimeHours=`awk '{print int($1%86400/3600)}' /proc/uptime`
+uptimeMinutes=`awk '{print int(($1%3600)/60)}' /proc/uptime`
+uptimeSeconds=`awk '{print int($1%60)}' /proc/uptime`
+
+printf "$stringUptime" "$uptimeDays" "$uptimeHours" "$uptimeMinutes" "$uptimeSeconds"
+

@@ -1,0 +1,46 @@
+#!/bin/bash
+############################
+source /etc/update-motd.d/strings/setlang.sh
+############################
+FILE_SYSTEMS=('/dev/sda3')
+############################
+dothedf()
+{
+	fs=`df --output=source -h | grep $1`
+	used=`df --output=source,used -h | grep $1`
+	size=`df --output=source,size -h | grep $1`
+	pcent=`df --output=source,pcent -h | grep $1`
+	used=${used##$1} 
+	size=${size##$1}
+	pcent=${pcent##$1}
+	pcent=${pcent//%/}
+	pcent=$(( 100 - $pcent )) 
+	printf "$stringDiskBarTitle" "$fs" "${used// /}" "${size// /}" "${pcent// /}"
+	calc_bar $pcent 40
+}
+calc_bar()
+{
+	pcent_avail=$1
+	pcent_occup=$(( 100 - $pcent_avail ))
+	bar_length=$2
+	used_length=$(( $bar_length * $pcent_occup / 100 ))	
+	printf "["
+	for ((i=1; i<=$used_length; i++)); do
+		printf "${green}="
+	done
+	for ((i=1; i<=$(( $bar_length - $used_length )); i++)); do
+		printf "${reset}."
+	done
+	printf "]"
+}
+printf "$stringTitleDisk"
+#printf `df --output=source,avail,used,size,pcent -h | grep -E "sda3"`
+for i in "${!FILE_SYSTEMS[@]}" 
+do
+	dothedf ${FILE_SYSTEMS[$i]}
+done
+
+printf "\n\n"
+
+unset FILE_SYSTEMS
+
